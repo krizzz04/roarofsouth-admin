@@ -24,7 +24,7 @@ import { fetchDataFromApi } from "./utils/api";
 import { useEffect } from "react";
 import Profile from "./Pages/Profile";
 import ProductDetails from "./Pages/Products/productDetails";
-import AddRAMS from "./Pages/Products/addRAMS.JSX";
+import AddRAMS from "./Pages/Products/addRAMS";
 import AddWeight from "./Pages/Products/addWeight";
 import AddSize from "./Pages/Products/addSize";
 import BannerV1List from "./Pages/Banners/bannerV1List";
