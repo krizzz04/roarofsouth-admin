@@ -13,6 +13,7 @@ import { RiProductHuntLine } from "react-icons/ri";
 import { Button } from "@mui/material";
 import { MdOutlineReviews } from "react-icons/md";
 import { MyContext } from "../../App";
+import { FaDollarSign, FaChartLine, FaCalendarDay } from "react-icons/fa";
 
 
 
@@ -99,6 +100,75 @@ const DashboardBoxes = (props) => {
           </div>
         </SwiperSlide>
       </Swiper>
+
+      {/* Sales Analytics Section */}
+      <div className="mb-5">
+        <h2 className="text-[20px] font-[600] mb-4 text-gray-800">Sales Analytics</h2>
+        <Swiper
+          slidesPerView={3}
+          spaceBetween={10}
+          navigation={context?.windowWidth < 1100 ? false : true}
+          modules={[Navigation, FreeMode]}
+          freeMode={true}
+          breakpoints={{
+            300: {
+              slidesPerView: 1,
+              spaceBetween: 10,
+            },
+            550: {
+              slidesPerView: 2,
+              spaceBetween: 10,
+            },
+            900: {
+              slidesPerView: 3,
+              spaceBetween: 10,
+            },
+          }}
+          className="dashboardBoxesSlider"
+        >
+          <SwiperSlide>
+            <div className="box bg-gradient-to-r from-[#059669] to-[#10b981] p-5 py-6 cursor-pointer hover:from-[#047857] hover:to-[#059669] rounded-md border border-[rgba(0,0,0,0.1)] flex items-center gap-4 shadow-lg">
+              <FaDollarSign className="text-[40px] text-[#fff]" />
+              <div className="info w-[80%]">
+                <h3 className="text-white text-sm">Total Sales Amount</h3>
+                <b className="text-white text-[20px]">
+                  {props?.totalSalesAmount ? `₹${props.totalSalesAmount.toLocaleString()}` : '₹0'}
+                </b>
+                <p className="text-white text-xs mt-1 opacity-90">All time revenue</p>
+              </div>
+              <BsBank className="text-[45px] text-[#fff] opacity-80" />
+            </div>
+          </SwiperSlide>
+
+          <SwiperSlide>
+            <div className="box bg-gradient-to-r from-[#dc2626] to-[#ef4444] p-5 py-6 cursor-pointer hover:from-[#b91c1c] hover:to-[#dc2626] rounded-md border border-[rgba(0,0,0,0.1)] flex items-center gap-4 shadow-lg">
+              <FaCalendarDay className="text-[40px] text-[#fff]" />
+              <div className="info w-[80%]">
+                <h3 className="text-white text-sm">Today's Sales</h3>
+                <b className="text-white text-[20px]">
+                  {props?.todaySales ? `₹${props.todaySales.toLocaleString()}` : '₹0'}
+                </b>
+                <p className="text-white text-xs mt-1 opacity-90">Today's revenue</p>
+              </div>
+              <FaChartLine className="text-[45px] text-[#fff] opacity-80" />
+            </div>
+          </SwiperSlide>
+
+          <SwiperSlide>
+            <div className="box bg-gradient-to-r from-[#7c3aed] to-[#8b5cf6] p-5 py-6 cursor-pointer hover:from-[#6d28d9] hover:to-[#7c3aed] rounded-md border border-[rgba(0,0,0,0.1)] flex items-center gap-4 shadow-lg">
+              <FaChartLine className="text-[40px] text-[#fff]" />
+              <div className="info w-[80%]">
+                <h3 className="text-white text-sm">Average Order Value</h3>
+                <b className="text-white text-[20px]">
+                  {props?.averageOrderValue ? `₹${props.averageOrderValue.toLocaleString()}` : '₹0'}
+                </b>
+                <p className="text-white text-xs mt-1 opacity-90">Per order average</p>
+              </div>
+              <FiPieChart className="text-[45px] text-[#fff] opacity-80" />
+            </div>
+          </SwiperSlide>
+        </Swiper>
+      </div>
     </>
   );
 };

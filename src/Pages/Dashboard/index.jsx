@@ -5,6 +5,9 @@ import { Button, Pagination } from "@mui/material";
 import { FaAngleDown } from "react-icons/fa6";
 import Badge from "../../Components/Badge";
 import { FaAngleUp } from "react-icons/fa6";
+import { FaCalendarDay, FaChartLine } from "react-icons/fa";
+import { GoGift } from "react-icons/go";
+import { FiPieChart } from "react-icons/fi";
 
 import {
   LineChart,
@@ -43,12 +46,18 @@ const Dashboard = () => {
   const [pageOrder, setPageOrder] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [orderSearchQuery, setOrderSearchQuery] = useState("");
+  const [orderFilter, setOrderFilter] = useState("all"); // "all", "cod", "prepaid"
 
   const [totalOrdersData, setTotalOrdersData] = useState([]);
 
   const [users, setUsers] = useState([]);
   const [allReviews, setAllReviews] = useState([]);
   const [ordersCount, setOrdersCount] = useState(null);
+  const [salesData, setSalesData] = useState({
+    totalSalesAmount: 0,
+    todaySales: 0,
+    averageOrderValue: 0
+  });
 
   const context = useContext(MyContext);
 
@@ -79,6 +88,8 @@ const Dashboard = () => {
     fetchDataFromApi(`/api/order/order-list`).then((res) => {
       if (res?.error === false) {
         setTotalOrdersData(res)
+        // Calculate sales analytics after getting all orders data
+        setTimeout(() => getSalesAnalytics(), 100);
       }
     })
     fetchDataFromApi(`/api/order/count`).then((res) => {
@@ -90,25 +101,33 @@ const Dashboard = () => {
 
 
   useEffect(() => {
+    // Filter orders based on search query and payment filter
+    let filteredOrders = totalOrdersData?.data || [];
 
-    // Filter orders based on search query
+    // Apply payment filter
+    if (orderFilter !== "all") {
+      filteredOrders = filteredOrders.filter((order) => {
+        if (orderFilter === "cod") {
+          return !order.paymentId || order.paymentId === "CASH ON DELIVERY";
+        } else if (orderFilter === "prepaid") {
+          return order.paymentId && order.paymentId !== "CASH ON DELIVERY";
+        }
+        return true;
+      });
+    }
+
+    // Apply search filter
     if (orderSearchQuery !== "") {
-      const filteredOrders = totalOrdersData?.data?.filter((order) =>
+      filteredOrders = filteredOrders.filter((order) =>
         order._id?.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
         order?.userId?.name.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
         order?.userId?.email.toLowerCase().includes(orderSearchQuery.toLowerCase()) ||
         order?.createdAt.includes(orderSearchQuery)
       );
-      setOrdersData(filteredOrders)
-    } else {
-      fetchDataFromApi(`/api/order/order-list?page=${pageOrder}&limit=5`).then((res) => {
-        if (res?.error === false) {
-          setOrders(res)
-          setOrdersData(res?.data)
-        }
-      })
     }
-  }, [orderSearchQuery])
+
+    setOrdersData(filteredOrders);
+  }, [orderSearchQuery, orderFilter, totalOrdersData])
 
 
 
@@ -178,6 +197,33 @@ const Dashboard = () => {
     });
   }
 
+  const getSalesAnalytics = () => {
+    // Calculate total sales amount from all orders
+    if (totalOrdersData?.data?.length > 0) {
+      const totalAmount = totalOrdersData.data.reduce((sum, order) => {
+        return sum + (parseFloat(order.totalAmt) || 0);
+      }, 0);
+
+      // Calculate today's sales
+      const today = new Date().toISOString().split('T')[0];
+      const todayOrders = totalOrdersData.data.filter(order => 
+        order.createdAt?.split('T')[0] === today
+      );
+      const todayAmount = todayOrders.reduce((sum, order) => {
+        return sum + (parseFloat(order.totalAmt) || 0);
+      }, 0);
+
+      // Calculate average order value
+      const averageOrderValue = totalOrdersData.data.length > 0 ? totalAmount / totalOrdersData.data.length : 0;
+
+      setSalesData({
+        totalSalesAmount: totalAmount,
+        todaySales: todayAmount,
+        averageOrderValue: averageOrderValue
+      });
+    }
+  }
+
 
 
   return (
@@ -206,19 +252,73 @@ const Dashboard = () => {
       </div>
 
       {
-        productData?.products?.length !== 0 && users?.length !== 0 && allReviews?.length !== 0 && <DashboardBoxes orders={ordersCount} products={productData?.products?.length} users={users?.length} reviews={allReviews?.length} category={context?.catData?.length} />
+        productData?.products?.length !== 0 && users?.length !== 0 && allReviews?.length !== 0 && <DashboardBoxes 
+          orders={ordersCount} 
+          products={productData?.products?.length} 
+          users={users?.length} 
+          reviews={allReviews?.length} 
+          category={context?.catData?.length}
+          totalSalesAmount={salesData.totalSalesAmount}
+          todaySales={salesData.todaySales}
+          averageOrderValue={salesData.averageOrderValue}
+        />
       }
 
       <Products/>
 
       <div className="card my-4 shadow-md sm:rounded-lg bg-white">
         <div className="grid grid-cols-1 lg:grid-cols-2 px-5 py-5 flex-col sm:flex-row">
-          <h2 className="text-[18px] font-[600] text-left mb-2 lg:mb-0">Recent Orders</h2>
-          <div className="ml-auto w-full">
+          <div>
+            <h2 className="text-[18px] font-[600] text-left mb-2 lg:mb-0">Recent Orders</h2>
+            <p className="text-sm text-gray-500">
+              Showing {ordersData?.length || 0} orders
+              {orderFilter !== "all" && (
+                <span className="ml-1">
+                  ({orderFilter === "cod" ? "Cash on Delivery" : "Prepaid"} only)
+                </span>
+              )}
+            </p>
+          </div>
+          <div className="ml-auto w-full flex flex-col gap-3">
+            {/* Payment Filter Buttons */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-600">Payment Filter:</span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setOrderFilter("all")}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    orderFilter === "all"
+                      ? "bg-blue-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  All Orders
+                </button>
+                <button
+                  onClick={() => setOrderFilter("cod")}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    orderFilter === "cod"
+                      ? "bg-green-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  Cash on Delivery
+                </button>
+                <button
+                  onClick={() => setOrderFilter("prepaid")}
+                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                    orderFilter === "prepaid"
+                      ? "bg-purple-500 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  Prepaid
+                </button>
+              </div>
+            </div>
             <SearchBox
               searchQuery={orderSearchQuery}
               setSearchQuery={setOrderSearchQuery}
-
               setPageOrder={setPageOrder}
             />
           </div>
@@ -518,6 +618,212 @@ const Dashboard = () => {
 
           </BarChart>
         }
+      </div>
+
+      {/* Daily Sales Chart */}
+      <div className="card my-4 shadow-md sm:rounded-lg bg-white">
+        <div className="flex items-center justify-between px-5 py-5 pb-0">
+          <h2 className="text-[18px] font-[600]">Daily Sales Trend</h2>
+        </div>
+
+        <div className="p-5">
+          {(() => {
+            // Generate last 7 days data
+            const last7Days = [];
+            for (let i = 6; i >= 0; i--) {
+              const date = new Date();
+              date.setDate(date.getDate() - i);
+              const dateStr = date.toISOString().split('T')[0];
+              
+              const dayOrders = totalOrdersData?.data?.filter(order => 
+                order.createdAt?.split('T')[0] === dateStr
+              ) || [];
+              
+              const dayAmount = dayOrders.reduce((sum, order) => 
+                sum + (parseFloat(order.totalAmt) || 0), 0
+              );
+
+              last7Days.push({
+                date: date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }),
+                sales: dayAmount,
+                orders: dayOrders.length
+              });
+            }
+
+            return (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={last7Days}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis 
+                    dataKey="date" 
+                    tick={{ fontSize: 12 }}
+                    style={{ fill: context?.theme === "dark" ? "white" : "#000" }}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    style={{ fill: context?.theme === "dark" ? "white" : "#000" }}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "#071739",
+                      color: "white",
+                    }}
+                    labelStyle={{ color: "yellow" }}
+                    itemStyle={{ color: "cyan" }}
+                    cursor={{ fill: "white" }}
+                  />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="sales" 
+                    stroke="#10b981" 
+                    strokeWidth={3}
+                    dot={{ fill: "#10b981", strokeWidth: 2, r: 4 }}
+                    activeDot={{ r: 6 }}
+                    name="Sales Amount (₹)"
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="orders" 
+                    stroke="#3b82f6" 
+                    strokeWidth={2}
+                    dot={{ fill: "#3b82f6", strokeWidth: 2, r: 3 }}
+                    activeDot={{ r: 5 }}
+                    name="Number of Orders"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            );
+          })()}
+        </div>
+      </div>
+
+      {/* Detailed Sales Analytics Section */}
+      <div className="card my-4 shadow-md sm:rounded-lg bg-white">
+        <div className="flex items-center justify-between px-5 py-5 pb-0">
+          <h2 className="text-[18px] font-[600]">Sales Performance Overview</h2>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-5">
+          {/* Weekly Sales */}
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-4 rounded-lg border border-blue-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-blue-600 font-medium">Weekly Sales</p>
+                <p className="text-2xl font-bold text-blue-800">
+                  ₹{(() => {
+                    const weekAgo = new Date();
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    const weekOrders = totalOrdersData?.data?.filter(order => 
+                      new Date(order.createdAt) >= weekAgo
+                    ) || [];
+                    const weekAmount = weekOrders.reduce((sum, order) => 
+                      sum + (parseFloat(order.totalAmt) || 0), 0
+                    );
+                    return weekAmount.toLocaleString();
+                  })()}
+                </p>
+                <p className="text-xs text-blue-600 mt-1">Last 7 days</p>
+              </div>
+              <div className="text-blue-500">
+                <FaCalendarDay className="text-2xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Monthly Sales */}
+          <div className="bg-gradient-to-br from-green-50 to-green-100 p-4 rounded-lg border border-green-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-green-600 font-medium">Monthly Sales</p>
+                <p className="text-2xl font-bold text-green-800">
+                  ₹{(() => {
+                    const monthAgo = new Date();
+                    monthAgo.setMonth(monthAgo.getMonth() - 1);
+                    const monthOrders = totalOrdersData?.data?.filter(order => 
+                      new Date(order.createdAt) >= monthAgo
+                    ) || [];
+                    const monthAmount = monthOrders.reduce((sum, order) => 
+                      sum + (parseFloat(order.totalAmt) || 0), 0
+                    );
+                    return monthAmount.toLocaleString();
+                  })()}
+                </p>
+                <p className="text-xs text-green-600 mt-1">Last 30 days</p>
+              </div>
+              <div className="text-green-500">
+                <FaChartLine className="text-2xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Total Orders */}
+          <div className="bg-gradient-to-br from-purple-50 to-purple-100 p-4 rounded-lg border border-purple-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-purple-600 font-medium">Total Orders</p>
+                <p className="text-2xl font-bold text-purple-800">
+                  {totalOrdersData?.data?.length || 0}
+                </p>
+                <p className="text-xs text-purple-600 mt-1">All time orders</p>
+              </div>
+              <div className="text-purple-500">
+                <GoGift className="text-2xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Conversion Rate */}
+          <div className="bg-gradient-to-br from-orange-50 to-orange-100 p-4 rounded-lg border border-orange-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-orange-600 font-medium">Conversion Rate</p>
+                <p className="text-2xl font-bold text-orange-800">
+                  {(() => {
+                    const totalUsers = users?.length || 1;
+                    const totalOrders = totalOrdersData?.data?.length || 0;
+                    const conversionRate = ((totalOrders / totalUsers) * 100).toFixed(1);
+                    return `${conversionRate}%`;
+                  })()}
+                </p>
+                <p className="text-xs text-orange-600 mt-1">Orders per user</p>
+              </div>
+              <div className="text-orange-500">
+                <FiPieChart className="text-2xl" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Sales Activity */}
+        <div className="px-5 pb-5">
+          <h3 className="text-[16px] font-[600] mb-3 text-gray-700">Recent Sales Activity</h3>
+          <div className="bg-gray-50 rounded-lg p-4">
+            <div className="space-y-3">
+              {totalOrdersData?.data?.slice(0, 5).map((order, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-md shadow-sm">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">
+                        Order #{order._id?.slice(-8)}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {order.userId?.name} • {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-gray-800">
+                      ₹{parseFloat(order.totalAmt).toLocaleString()}
+                    </p>
+                    <Badge status={order.order_status} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );
