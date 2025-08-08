@@ -47,6 +47,8 @@ const Dashboard = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [orderSearchQuery, setOrderSearchQuery] = useState("");
   const [orderFilter, setOrderFilter] = useState("all"); // "all", "cod", "prepaid"
+  const [printDate, setPrintDate] = useState("");
+  const [showPrintModal, setShowPrintModal] = useState(false);
 
   const [totalOrdersData, setTotalOrdersData] = useState([]);
 
@@ -224,6 +226,116 @@ const Dashboard = () => {
     }
   }
 
+  const printInvoicesByDate = () => {
+    if (!printDate) {
+      alert("Please select a date to print invoices");
+      return;
+    }
+
+    const ordersForDate = totalOrdersData?.data?.filter(order => 
+      order.createdAt?.split('T')[0] === printDate
+    ) || [];
+
+    if (ordersForDate.length === 0) {
+      alert("No orders found for the selected date");
+      return;
+    }
+
+    // Create print content
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>Invoices - ${printDate}</title>
+        <style>
+          body { font-family: Arial, sans-serif; margin: 20px; }
+          .invoice { page-break-after: always; margin-bottom: 30px; border: 1px solid #ddd; padding: 20px; }
+          .header { text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 20px; }
+          .order-info { margin-bottom: 15px; }
+          .customer-info { margin-bottom: 15px; }
+          .products-table { width: 100%; border-collapse: collapse; margin-bottom: 15px; }
+          .products-table th, .products-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+          .products-table th { background-color: #f5f5f5; }
+          .total { text-align: right; font-weight: bold; font-size: 18px; }
+          .footer { margin-top: 20px; text-align: center; font-size: 12px; color: #666; }
+          @media print {
+            .no-print { display: none; }
+            .invoice { page-break-after: always; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="no-print" style="margin-bottom: 20px;">
+          <button onclick="window.print()">Print All Invoices</button>
+          <button onclick="window.close()">Close</button>
+        </div>
+        ${ordersForDate.map((order, index) => `
+          <div class="invoice">
+            <div class="header">
+              <h1>INVOICE</h1>
+              <p>Roar of South</p>
+              <p>Order Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+            </div>
+            
+            <div class="order-info">
+              <h3>Order Information</h3>
+              <p><strong>Order ID:</strong> ${order._id}</p>
+              <p><strong>Payment Method:</strong> ${order.paymentId || 'Cash on Delivery'}</p>
+              <p><strong>Order Status:</strong> ${order.order_status}</p>
+            </div>
+            
+            <div class="customer-info">
+              <h3>Customer Information</h3>
+              <p><strong>Name:</strong> ${order.userId?.name}</p>
+              <p><strong>Email:</strong> ${order.userId?.email}</p>
+              <p><strong>Phone:</strong> ${order.delivery_address?.mobile}</p>
+              <p><strong>Address:</strong> ${order.delivery_address?.address_line1}, ${order.delivery_address?.city}, ${order.delivery_address?.state} - ${order.delivery_address?.pincode}</p>
+            </div>
+            
+            <div class="products">
+              <h3>Products</h3>
+              <table class="products-table">
+                <thead>
+                  <tr>
+                    <th>Product</th>
+                    <th>Price</th>
+                    <th>Quantity</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${order.products?.map(product => `
+                    <tr>
+                      <td>${product.productTitle}</td>
+                      <td>₹${product.price?.toLocaleString()}</td>
+                      <td>${product.quantity}</td>
+                      <td>₹${(product.price * product.quantity)?.toLocaleString()}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="total">
+              <p>Total Amount: ₹${parseFloat(order.totalAmt).toLocaleString()}</p>
+            </div>
+            
+            <div class="footer">
+              <p>Thank you for your business!</p>
+              <p>Generated on: ${new Date().toLocaleString()}</p>
+            </div>
+          </div>
+        `).join('')}
+      </body>
+      </html>
+    `;
+
+    // Open print window
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  }
+
 
 
   return (
@@ -279,49 +391,73 @@ const Dashboard = () => {
               )}
             </p>
           </div>
-          <div className="ml-auto w-full flex flex-col gap-3">
-            {/* Payment Filter Buttons */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-600">Payment Filter:</span>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => setOrderFilter("all")}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    orderFilter === "all"
-                      ? "bg-blue-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  All Orders
-                </button>
-                <button
-                  onClick={() => setOrderFilter("cod")}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    orderFilter === "cod"
-                      ? "bg-green-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  Cash on Delivery
-                </button>
-                <button
-                  onClick={() => setOrderFilter("prepaid")}
-                  className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
-                    orderFilter === "prepaid"
-                      ? "bg-purple-500 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                  }`}
-                >
-                  Prepaid
-                </button>
-              </div>
-            </div>
-            <SearchBox
-              searchQuery={orderSearchQuery}
-              setSearchQuery={setOrderSearchQuery}
-              setPageOrder={setPageOrder}
-            />
-          </div>
+                     <div className="ml-auto w-full flex flex-col gap-3">
+             {/* Payment Filter Buttons */}
+             <div className="flex items-center gap-2">
+               <span className="text-sm font-medium text-gray-600">Payment Filter:</span>
+               <div className="flex items-center gap-1">
+                 <button
+                   onClick={() => setOrderFilter("all")}
+                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                     orderFilter === "all"
+                       ? "bg-blue-500 text-white"
+                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                   }`}
+                 >
+                   All Orders
+                 </button>
+                 <button
+                   onClick={() => setOrderFilter("cod")}
+                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                     orderFilter === "cod"
+                       ? "bg-green-500 text-white"
+                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                   }`}
+                 >
+                   Cash on Delivery
+                 </button>
+                 <button
+                   onClick={() => setOrderFilter("prepaid")}
+                   className={`px-3 py-1 text-xs font-medium rounded-md transition-colors ${
+                     orderFilter === "prepaid"
+                       ? "bg-purple-500 text-white"
+                       : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                   }`}
+                 >
+                   Prepaid
+                 </button>
+               </div>
+             </div>
+
+             {/* Print Invoice Section */}
+             <div className="flex items-center gap-2">
+               <span className="text-sm font-medium text-gray-600">Print Invoices:</span>
+               <div className="flex items-center gap-2">
+                 <input
+                   type="date"
+                   value={printDate}
+                   onChange={(e) => setPrintDate(e.target.value)}
+                   className="px-3 py-1 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                   max={new Date().toISOString().split('T')[0]}
+                 />
+                 <button
+                   onClick={printInvoicesByDate}
+                   className="px-3 py-1 text-xs font-medium bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors flex items-center gap-1"
+                 >
+                   <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                   </svg>
+                   Print
+                 </button>
+               </div>
+             </div>
+
+             <SearchBox
+               searchQuery={orderSearchQuery}
+               setSearchQuery={setOrderSearchQuery}
+               setPageOrder={setPageOrder}
+             />
+           </div>
         </div>
 
         <div className="relative overflow-x-auto mt-0">
