@@ -565,6 +565,407 @@ const Dashboard = () => {
     printWindow.document.close();
   }
 
+  const generateAllInvoicesForDate = (orders) => {
+    const printContent = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <title>All Invoices - ${printDate}</title>
+        <style>
+          @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+          
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          
+          body { 
+            font-family: 'Inter', sans-serif; 
+            background: #f8fafc;
+            color: #1e293b;
+            line-height: 1.6;
+          }
+          
+          .page-break {
+            page-break-before: always;
+          }
+          
+          .page-break:first-child {
+            page-break-before: avoid;
+          }
+          
+          .invoice-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            overflow: hidden;
+          }
+          
+          .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+          }
+          
+          .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+          }
+          
+          .header .company {
+            font-size: 16px;
+            opacity: 0.9;
+            margin-bottom: 4px;
+          }
+          
+          .header .date {
+            font-size: 14px;
+            opacity: 0.8;
+          }
+          
+          .content {
+            padding: 30px;
+          }
+          
+          .section {
+            margin-bottom: 30px;
+          }
+          
+          .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e5e7eb;
+          }
+          
+          .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+          }
+          
+          .info-item {
+            display: flex;
+            flex-direction: column;
+          }
+          
+          .info-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+          }
+          
+          .info-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1f2937;
+          }
+          
+          .address-box {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 10px;
+          }
+          
+          .products-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+          }
+          
+          .products-table th {
+            background: #f3f4f6;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            font-size: 13px;
+            color: #374151;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          
+          .products-table td {
+            padding: 12px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 14px;
+          }
+          
+          .products-table tr:last-child td {
+            border-bottom: none;
+          }
+          
+          .total-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: right;
+          }
+          
+          .total-amount {
+            font-size: 24px;
+            font-weight: 700;
+            color: #059669;
+          }
+          
+          .footer {
+            background: #f9fafb;
+            padding: 20px 30px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+          }
+          
+          .footer p {
+            font-size: 12px;
+            color: #6b7280;
+            margin-bottom: 4px;
+          }
+          
+          .courier-info {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+          }
+          
+          .courier-info h4 {
+            color: #92400e;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+          }
+          
+          .courier-info p {
+            font-size: 13px;
+            color: #92400e;
+            margin-bottom: 4px;
+          }
+          
+          .summary-header {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            margin-bottom: 20px;
+          }
+          
+          .summary-header h1 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+          }
+          
+          .summary-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin: 20px 0;
+          }
+          
+          .summary-stat {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+          }
+          
+          .summary-stat h3 {
+            font-size: 24px;
+            font-weight: 700;
+            color: #059669;
+            margin-bottom: 4px;
+          }
+          
+          .summary-stat p {
+            font-size: 14px;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+          }
+          
+          @media print {
+            body { background: white; }
+            .invoice-container { 
+              box-shadow: none; 
+              margin: 0;
+              border-radius: 0;
+            }
+            .header { background: #374151 !important; }
+            .summary-header { background: #059669 !important; }
+            .no-print { display: none; }
+            .page-break { page-break-before: always; }
+            .page-break:first-child { page-break-before: avoid; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="no-print" style="text-align: center; padding: 20px; background: #f8fafc;">
+          <button onclick="window.print()" style="background: #059669; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; cursor: pointer; margin-right: 10px;">Print All Invoices</button>
+          <button onclick="window.close()" style="background: #6b7280; color: white; border: none; padding: 12px 24px; border-radius: 6px; font-weight: 500; cursor: pointer;">Close</button>
+        </div>
+        
+        <div class="summary-header">
+          <h1>DAILY INVOICES SUMMARY</h1>
+          <p>Date: ${new Date(printDate).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</p>
+        </div>
+        
+        <div class="summary-stats">
+          <div class="summary-stat">
+            <h3>${orders.length}</h3>
+            <p>Total Orders</p>
+          </div>
+          <div class="summary-stat">
+            <h3>₹${orders.reduce((sum, order) => sum + (parseFloat(order.totalAmt) || 0), 0).toLocaleString()}</h3>
+            <p>Total Amount</p>
+          </div>
+          <div class="summary-stat">
+            <h3>${orders.reduce((sum, order) => sum + (order.products?.length || 0), 0)}</h3>
+            <p>Total Items</p>
+          </div>
+        </div>
+        
+        ${orders.map((order, index) => `
+          <div class="invoice-container ${index > 0 ? 'page-break' : ''}">
+            <div class="header">
+              <h1>COURIER INVOICE</h1>
+              <div class="company">Roar of South</div>
+              <div class="date">Order Date: ${new Date(order.createdAt).toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+              })}</div>
+            </div>
+            
+            <div class="content">
+              <div class="section">
+                <div class="section-title">Order Information</div>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <div class="info-label">Order ID</div>
+                    <div class="info-value">${order._id}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Payment Method</div>
+                    <div class="info-value">${order.paymentId || 'Cash on Delivery'}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Order Status</div>
+                    <div class="info-value">${order.order_status}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Total Items</div>
+                    <div class="info-value">${order.products?.length || 0}</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="section">
+                <div class="section-title">Delivery Information</div>
+                <div class="info-grid">
+                  <div class="info-item">
+                    <div class="info-label">Customer Name</div>
+                    <div class="info-value">${order.userId?.name}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Phone Number</div>
+                    <div class="info-value">${order.delivery_address?.mobile}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Email</div>
+                    <div class="info-value">${order.userId?.email}</div>
+                  </div>
+                  <div class="info-item">
+                    <div class="info-label">Pincode</div>
+                    <div class="info-value">${order.delivery_address?.pincode}</div>
+                  </div>
+                </div>
+                
+                <div class="address-box">
+                  <div class="info-label">Delivery Address</div>
+                  <div class="info-value">
+                    ${order.delivery_address?.address_line1}, ${order.delivery_address?.landmark ? order.delivery_address.landmark + ', ' : ''}${order.delivery_address?.city}, ${order.delivery_address?.state} - ${order.delivery_address?.pincode}, ${order.delivery_address?.country}
+                  </div>
+                </div>
+              </div>
+              
+              <div class="section">
+                <div class="section-title">Products</div>
+                <table class="products-table">
+                  <thead>
+                    <tr>
+                      <th>Product Name</th>
+                      <th>Price</th>
+                      <th>Qty</th>
+                      <th>Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${order.products?.map(product => `
+                      <tr>
+                        <td>${product.productTitle}</td>
+                        <td>₹${product.price?.toLocaleString()}</td>
+                        <td>${product.quantity}</td>
+                        <td>₹${(product.price * product.quantity)?.toLocaleString()}</td>
+                      </tr>
+                    `).join('')}
+                  </tbody>
+                </table>
+                
+                <div class="total-section">
+                  <div class="total-amount">Total: ₹${parseFloat(order.totalAmt).toLocaleString()}</div>
+                </div>
+              </div>
+              
+              <div class="courier-info">
+                <h4>📦 Courier Instructions</h4>
+                <p>• Package contains ${order.products?.length || 0} item(s)</p>
+                <p>• Handle with care - contains fragile items</p>
+                <p>• Payment: ${order.paymentId ? 'Prepaid' : 'Cash on Delivery'}</p>
+                <p>• Contact customer before delivery: ${order.delivery_address?.mobile}</p>
+              </div>
+            </div>
+            
+            <div class="footer">
+              <p>Thank you for choosing Roar of South!</p>
+              <p>Generated on: ${new Date().toLocaleString('en-US', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</p>
+            </div>
+          </div>
+        `).join('')}
+      </body>
+      </html>
+    `;
+
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+  }
+
 
 
   return (
@@ -1248,9 +1649,7 @@ const Dashboard = () => {
                          </div>
                        </div>
                        <button
-                         onClick={() => {
-                           ordersForDate.forEach(order => generateCourierInvoice(order));
-                         }}
+                         onClick={() => generateAllInvoicesForDate(ordersForDate)}
                          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2"
                        >
                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1325,7 +1724,7 @@ const Dashboard = () => {
              <div className="bg-gray-50 px-6 py-4 border-t">
                <div className="flex items-center justify-between">
                  <div className="text-sm text-gray-600">
-                   💡 Tip: Each invoice will open in a new window for printing
+                   💡 Tip: All invoices will be printed together in a single document
                  </div>
                  <div className="flex gap-3">
                    <button
