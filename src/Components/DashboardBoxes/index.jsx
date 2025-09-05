@@ -20,6 +20,8 @@ import { FaDollarSign, FaChartLine, FaCalendarDay } from "react-icons/fa";
 const DashboardBoxes = (props) => {
 
   const context = useContext(MyContext);
+  
+  console.log('DashboardBoxes received props:', props);
 
 
   return (

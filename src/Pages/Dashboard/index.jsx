@@ -88,10 +88,9 @@ const Dashboard = () => {
       }
     })
     fetchDataFromApi(`/api/order/order-list`).then((res) => {
+      console.log('API Response for order-list:', res);
       if (res?.error === false) {
         setTotalOrdersData(res)
-        // Calculate sales analytics after getting all orders data
-        setTimeout(() => getSalesAnalytics(), 100);
       }
     })
     fetchDataFromApi(`/api/order/count`).then((res) => {
@@ -130,6 +129,14 @@ const Dashboard = () => {
 
     setOrdersData(filteredOrders);
   }, [orderSearchQuery, orderFilter, totalOrdersData])
+
+  // Calculate sales analytics whenever totalOrdersData changes
+  useEffect(() => {
+    console.log('totalOrdersData changed:', totalOrdersData);
+    if (totalOrdersData?.data?.length > 0) {
+      getSalesAnalytics();
+    }
+  }, [totalOrdersData])
 
 
 
@@ -202,6 +209,8 @@ const Dashboard = () => {
   const getSalesAnalytics = () => {
     // Calculate total sales amount from all orders
     if (totalOrdersData?.data?.length > 0) {
+      console.log('Calculating sales analytics for', totalOrdersData.data.length, 'orders');
+      
       const totalAmount = totalOrdersData.data.reduce((sum, order) => {
         return sum + (parseFloat(order.totalAmt) || 0);
       }, 0);
@@ -218,11 +227,19 @@ const Dashboard = () => {
       // Calculate average order value
       const averageOrderValue = totalOrdersData.data.length > 0 ? totalAmount / totalOrdersData.data.length : 0;
 
+      console.log('Sales Analytics:', {
+        totalSalesAmount: totalAmount,
+        todaySales: todayAmount,
+        averageOrderValue: averageOrderValue
+      });
+
       setSalesData({
         totalSalesAmount: totalAmount,
         todaySales: todayAmount,
         averageOrderValue: averageOrderValue
       });
+    } else {
+      console.log('No orders data available for sales analytics');
     }
   }
 
@@ -994,16 +1011,28 @@ const Dashboard = () => {
       </div>
 
       {
-        productData?.products?.length !== 0 && users?.length !== 0 && allReviews?.length !== 0 && <DashboardBoxes 
-          orders={ordersCount} 
-          products={productData?.products?.length} 
-          users={users?.length} 
-          reviews={allReviews?.length} 
-          category={context?.catData?.length}
-          totalSalesAmount={salesData.totalSalesAmount}
-          todaySales={salesData.todaySales}
-          averageOrderValue={salesData.averageOrderValue}
-        />
+        productData?.products?.length !== 0 && users?.length !== 0 && allReviews?.length !== 0 && (() => {
+          console.log('DashboardBoxes props:', {
+            orders: ordersCount,
+            products: productData?.products?.length,
+            users: users?.length,
+            reviews: allReviews?.length,
+            category: context?.catData?.length,
+            totalSalesAmount: salesData.totalSalesAmount,
+            todaySales: salesData.todaySales,
+            averageOrderValue: salesData.averageOrderValue
+          });
+          return <DashboardBoxes 
+            orders={ordersCount} 
+            products={productData?.products?.length} 
+            users={users?.length} 
+            reviews={allReviews?.length} 
+            category={context?.catData?.length}
+            totalSalesAmount={salesData.totalSalesAmount}
+            todaySales={salesData.todaySales}
+            averageOrderValue={salesData.averageOrderValue}
+          />
+        })()
       }
 
       <Products/>
