@@ -484,7 +484,7 @@ const Dashboard = () => {
               <div class="info-grid">
                 <div class="info-item">
                   <div class="info-label">Customer Name</div>
-                  <div class="info-value">${order.delivery_address?.name || order.userId?.name}</div>
+                  <div class="info-value">${order.delivery_address?.fullName || order.delivery_address?.name || order.userId?.name}</div>
                 </div>
                 <div class="info-item">
                   <div class="info-label">Phone Number</div>
@@ -884,7 +884,7 @@ const Dashboard = () => {
                 <div class="info-grid">
                                      <div class="info-item">
                      <div class="info-label">Customer Name</div>
-                     <div class="info-value">${order.delivery_address?.name || order.userId?.name}</div>
+                     <div class="info-value">${order.delivery_address?.fullName || order.delivery_address?.name || order.userId?.name}</div>
                    </div>
                   <div class="info-item">
                     <div class="info-label">Phone Number</div>
@@ -1161,7 +1161,7 @@ const Dashboard = () => {
                         </td>
 
                         <td className="px-6 py-4 font-[500] whitespace-nowrap">
-                          {order?.delivery_address?.name || order?.userId?.name}
+                          {order?.delivery_address?.fullName || order?.delivery_address?.name || order?.userId?.name}
                         </td>
 
                         <td className="px-6 py-4 font-[500]">{order?.delivery_address?.mobile}</td>
@@ -1667,7 +1667,7 @@ const Dashboard = () => {
                                #{order._id?.slice(-8)}
                              </div>
                              <div>
-                               <h4 className="font-semibold text-gray-800">{order.delivery_address?.name || order.userId?.name}</h4>
+                               <h4 className="font-semibold text-gray-800">{order.delivery_address?.fullName || order.delivery_address?.name || order.userId?.name}</h4>
                                <p className="text-sm text-gray-500">{order.delivery_address?.mobile}</p>
                              </div>
                            </div>
