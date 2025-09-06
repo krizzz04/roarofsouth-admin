@@ -232,7 +232,7 @@ export const Orders = () => {
                       <td className="px-6 py-4 font-[500]">{order?.totalAmt}</td>
 
                       <td className="px-6 py-4 font-[500]">
-                        {order?.userId?.email?.substr(0,5)+'***'}
+                        {(order?.delivery_address?.email || order?.userId?.email)?.substr(0,5)+'***'}
                       </td>
 
                       <td className="px-6 py-4 font-[500]">

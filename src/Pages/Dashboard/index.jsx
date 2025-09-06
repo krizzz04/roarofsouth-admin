@@ -1219,7 +1219,7 @@ const Dashboard = () => {
                         <td className="px-6 py-4 font-[500]">{order?.totalAmt}</td>
 
                         <td className="px-6 py-4 font-[500]">
-                          {order?.userId?.email}
+                          {order?.delivery_address?.email || order?.userId?.email}
                         </td>
 
                         <td className="px-6 py-4 font-[500]">
