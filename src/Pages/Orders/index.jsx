@@ -133,6 +133,9 @@ export const Orders = () => {
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
+              <th scope="col" className="px-6 py-3 whitespace-nowrap">
+                SI No
+              </th>
               <th scope="col" className="px-6 py-3">
                 &nbsp;
               </th>
@@ -181,6 +184,9 @@ export const Orders = () => {
                 return (
                   <>
                     <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+                      <td className="px-6 py-4 font-[500] text-center font-bold text-blue-600">
+                        {index + 1}
+                      </td>
                       <td className="px-6 py-4 font-[500]">
                         <Button
                           className="!w-[35px] !h-[35px] !min-w-[35px] !rounded-full !bg-[#f1f1f1]"
@@ -203,7 +209,7 @@ export const Orders = () => {
                       </td>
 
                       <td className="px-6 py-4 font-[500] whitespace-nowrap">
-                        {order?.userId?.name}
+                        {order?.delivery_address?.fullName || order?.delivery_address?.name || order?.userId?.name}
                       </td>
 
                       <td className="px-6 py-4 font-[500]">{order?.delivery_address?.mobile}</td>
@@ -261,7 +267,7 @@ export const Orders = () => {
 
                     {isOpenOrderdProduct === index && (
                       <tr>
-                        <td className="pl-20" colSpan="6">
+                        <td className="pl-20" colSpan="13">
                           <div className="relative overflow-x-auto">
                             <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
