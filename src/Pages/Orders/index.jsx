@@ -185,7 +185,7 @@ export const Orders = () => {
                   <>
                     <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                       <td className="px-6 py-4 font-[500] text-center font-bold text-blue-600">
-                        {(pageOrder - 1) * 5 + index + 1}
+                        {totalOrdersData?.data?.length - ((pageOrder - 1) * 5 + index)}
                       </td>
                       <td className="px-6 py-4 font-[500]">
                         <Button
