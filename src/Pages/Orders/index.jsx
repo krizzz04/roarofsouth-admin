@@ -134,7 +134,7 @@ export const Orders = () => {
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
               <th scope="col" className="px-6 py-3 whitespace-nowrap">
-                SI No
+                Order No
               </th>
               <th scope="col" className="px-6 py-3">
                 &nbsp;
@@ -185,7 +185,7 @@ export const Orders = () => {
                   <>
                     <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
                       <td className="px-6 py-4 font-[500] text-center font-bold text-blue-600">
-                        {index + 1}
+                        {(pageOrder - 1) * 5 + index + 1}
                       </td>
                       <td className="px-6 py-4 font-[500]">
                         <Button
