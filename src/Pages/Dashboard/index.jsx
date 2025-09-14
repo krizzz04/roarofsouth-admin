@@ -87,7 +87,7 @@ const Dashboard = () => {
         setOrdersData(res?.data)
       }
     })
-    fetchDataFromApi(`/api/order/order-list`).then((res) => {
+    fetchDataFromApi(`/api/order/order-list?page=1&limit=1000`).then((res) => {
       console.log('API Response for order-list:', res);
       if (res?.error === false) {
         setTotalOrdersData(res)
@@ -1184,7 +1184,7 @@ const Dashboard = () => {
                         </td>
                         <td className="px-6 py-4 font-[500]">
                           <span className="text-primary font-bold">
-                            {(totalOrdersData?.totalOrders || totalOrdersData?.data?.length || 0) - index}
+                            {(totalOrdersData?.data?.length || 0) - index}
                           </span>
                         </td>
                         <td className="px-6 py-4 font-[500]">
