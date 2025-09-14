@@ -61,8 +61,9 @@ export const Orders = () => {
         context?.setProgress(100);
       }
     })
-    fetchDataFromApi(`/api/order/order-list`).then((res) => {
+    fetchDataFromApi(`/api/order/order-list?page=1&limit=1000`).then((res) => {
       if (res?.error === false) {
+        console.log("Total orders API response:", res);
         setTotalOrdersData(res)
       }
     })
@@ -75,8 +76,8 @@ export const Orders = () => {
     if (searchQuery !== "") {
       const filteredOrders = totalOrdersData?.data?.filter((order) =>
         order._id?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order?.userId?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order?.userId?.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (order?.delivery_address?.fullName || order?.delivery_address?.name || order?.userId?.name)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (order?.delivery_address?.email || order?.userId?.email)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         order?.createdAt.includes(searchQuery)
       );
       setOrdersData(filteredOrders)
@@ -133,11 +134,11 @@ export const Orders = () => {
         <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
             <tr>
-              <th scope="col" className="px-6 py-3 whitespace-nowrap">
-                Order No
-              </th>
               <th scope="col" className="px-6 py-3">
                 &nbsp;
+              </th>
+              <th scope="col" className="px-6 py-3 whitespace-nowrap">
+                Order No
               </th>
               <th scope="col" className="px-6 py-3 whitespace-nowrap">
                 Order Id
@@ -184,9 +185,6 @@ export const Orders = () => {
                 return (
                   <>
                     <tr className="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                      <td className="px-6 py-4 font-[500] text-center font-bold text-blue-600">
-                        {totalOrdersData?.data?.length - ((pageOrder - 1) * 5 + index)}
-                      </td>
                       <td className="px-6 py-4 font-[500]">
                         <Button
                           className="!w-[35px] !h-[35px] !min-w-[35px] !rounded-full !bg-[#f1f1f1]"
@@ -197,6 +195,11 @@ export const Orders = () => {
                           }
 
                         </Button>
+                      </td>
+                      <td className="px-6 py-4 font-[500]">
+                        <span className="text-primary font-bold">
+                          {(totalOrdersData?.data?.length || 0) - ((pageOrder - 1) * 5 + index)}
+                        </span>
                       </td>
                       <td className="px-6 py-4 font-[500]">
                         <span className="text-primary">
@@ -232,7 +235,7 @@ export const Orders = () => {
                       <td className="px-6 py-4 font-[500]">{order?.totalAmt}</td>
 
                       <td className="px-6 py-4 font-[500]">
-                        {(order?.delivery_address?.email || order?.userId?.email)?.substr(0,5)+'***'}
+                        {order?.delivery_address?.email || order?.userId?.email}
                       </td>
 
                       <td className="px-6 py-4 font-[500]">
@@ -267,7 +270,7 @@ export const Orders = () => {
 
                     {isOpenOrderdProduct === index && (
                       <tr>
-                        <td className="pl-20" colSpan="13">
+                        <td className="pl-20" colSpan="7">
                           <div className="relative overflow-x-auto">
                             <table className="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
                               <thead className="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">

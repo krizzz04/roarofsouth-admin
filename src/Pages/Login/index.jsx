@@ -18,8 +18,14 @@ import { MyContext } from "../../App.jsx";
 import { getAuth, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { firebaseApp } from "../../firebase";
 import { useEffect } from "react";
-const auth = getAuth(firebaseApp);
-const googleProvider = new GoogleAuthProvider();
+
+// Initialize auth only if Firebase is available
+let auth = null;
+let googleProvider = null;
+if (firebaseApp) {
+  auth = getAuth(firebaseApp);
+  googleProvider = new GoogleAuthProvider();
+}
 
 const Login = () => {
   const [loadingGoogle, setLoadingGoogle] = React.useState(false);
@@ -129,6 +135,10 @@ const Login = () => {
 
 
   const authWithGoogle = () => {
+    if (!auth || !googleProvider) {
+      context.alertBox("error", "Firebase authentication is not available. Please check your configuration.");
+      return;
+    }
 
     setLoadingGoogle(true);
 
