@@ -465,7 +465,7 @@ const Dashboard = () => {
         <div class="invoice-container">
           <div class="header">
             <h1>COURIER INVOICE</h1>
-            <div class="company">Roar of South</div>
+            <div class="company">Roar Of South</div>
             <div class="date">Order Date: ${new Date(order.createdAt).toLocaleDateString('en-US', { 
               year: 'numeric', 
               month: 'long', 
