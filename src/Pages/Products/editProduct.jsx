@@ -248,18 +248,43 @@ const EditProduct = () => {
     }
 
     const removeImg = (image, index) => {
-        var imageArr = [];
-        imageArr = previews;
+        // Store original state for potential revert
+        const originalPreviews = [...previews];
+        
+        // Create a new array without the image to remove
+        const updatedPreviews = previews.filter((_, i) => i !== index);
+        
+        // Optimistically update UI first
+        setPreviews(updatedPreviews);
+        setFormFields(prev => ({
+            ...prev,
+            images: updatedPreviews
+        }));
+
+        // Then delete from server
         deleteImages(`/api/category/deteleImage?img=${image}`).then((res) => {
-            imageArr.splice(index, 1);
-
-            setPreviews([]);
-            setTimeout(() => {
-                setPreviews(imageArr);
-                formFields.images = imageArr
-            }, 100);
-
-        })
+            if (res?.data?.error === false || res?.status === 200) {
+                // Success - state already updated
+                context.alertBox("success", "Image removed successfully");
+            } else {
+                // If deletion failed, revert the state
+                setPreviews(originalPreviews);
+                setFormFields(prev => ({
+                    ...prev,
+                    images: originalPreviews
+                }));
+                context.alertBox("error", "Failed to remove image. Please try again.");
+            }
+        }).catch((error) => {
+            // If deletion failed, revert the state
+            setPreviews(originalPreviews);
+            setFormFields(prev => ({
+                ...prev,
+                images: originalPreviews
+            }));
+            console.error('Error removing image:', error);
+            context.alertBox("error", "Failed to remove image. Please try again.");
+        });
     }
 
 
@@ -279,18 +304,43 @@ const EditProduct = () => {
 
 
     const removeBannerImg = (image, index) => {
-        var imageArr = [];
-        imageArr = bannerPreviews;
+        // Store original state for potential revert
+        const originalBannerPreviews = [...bannerPreviews];
+        
+        // Create a new array without the image to remove
+        const updatedBannerPreviews = bannerPreviews.filter((_, i) => i !== index);
+        
+        // Optimistically update UI first
+        setBannerPreviews(updatedBannerPreviews);
+        setFormFields(prev => ({
+            ...prev,
+            bannerimages: updatedBannerPreviews
+        }));
+
+        // Then delete from server
         deleteImages(`/api/category/deteleImage?img=${image}`).then((res) => {
-            imageArr.splice(index, 1);
-
-            setBannerPreviews([]);
-            setTimeout(() => {
-                setBannerPreviews(imageArr);
-                formFields.bannerimages = imageArr
-            }, 100);
-
-        })
+            if (res?.data?.error === false || res?.status === 200) {
+                // Success - state already updated
+                context.alertBox("success", "Banner image removed successfully");
+            } else {
+                // If deletion failed, revert the state
+                setBannerPreviews(originalBannerPreviews);
+                setFormFields(prev => ({
+                    ...prev,
+                    bannerimages: originalBannerPreviews
+                }));
+                context.alertBox("error", "Failed to remove banner image. Please try again.");
+            }
+        }).catch((error) => {
+            // If deletion failed, revert the state
+            setBannerPreviews(originalBannerPreviews);
+            setFormFields(prev => ({
+                ...prev,
+                bannerimages: originalBannerPreviews
+            }));
+            console.error('Error removing banner image:', error);
+            context.alertBox("error", "Failed to remove banner image. Please try again.");
+        });
     }
 
 

@@ -1,5 +1,7 @@
 import axios from "axios";
-const apiUrl = import.meta.env.VITE_API_URL || "https://tara-g1nf.onrender.com";
+// In development, use relative paths to leverage Vite proxy (avoids CORS)
+// In production, use the full API URL
+const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "" : "http://localhost:8000");
 
 export const postData = async (url, formData) => {
     try {
@@ -120,8 +122,13 @@ export const deleteImages = async (url,image ) => {
           },
     
     } 
-    const { res } = await axios.delete(apiUrl + url, params);
-    return res;
+    try {
+        const response = await axios.delete(apiUrl + url, params);
+        return response;
+    } catch (error) {
+        console.error('Error deleting image:', error);
+        throw error;
+    }
 }
 
 
