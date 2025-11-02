@@ -1,7 +1,7 @@
 import axios from "axios";
 // In development, use relative paths to leverage Vite proxy (avoids CORS)
 // In production, use the full API URL
-const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "" : "http://localhost:8000");
+const apiUrl = import.meta.env.VITE_API_URL || (import.meta.env.DEV ? "" : "https://tara-g1nf.onrender.com");
 
 export const postData = async (url, formData) => {
     try {
